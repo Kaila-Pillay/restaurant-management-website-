@@ -1,6 +1,6 @@
 # Restaurant Management Website
 
-A full-stack restaurant management system developed for the DUT Rendezvous restaurant using HTML, CSS, JavaScript, Node.js, Express.js and Microsoft SQL Server.
+Full-stack restaurant management website developed as a proposed solution for DUT Rendezvous restaurant, built using HTML, CSS, JavaScript, Node.js and Microsoft SQL Server.
 
 The application provides an integrated platform connecting customers and restaurant staff, allowing reservations, takeaway orders and restaurant operations to be managed digitally.
 
