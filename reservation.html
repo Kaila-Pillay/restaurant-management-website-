@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Make a Reservation | Rendezvous Restaurant</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <span class="brand-mark">R</span>
+      <span class="brand-text"><span class="name">Rendezvous</span><br><span class="tag">RESTAURANT</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="menu.html">Menu</a>
+      <a href="order.html">Order</a>
+      <a href="reservation.html">Reserve</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="login.html" id="navLoginLink">Login</a>
+      <a href="account.html" id="navAccountLink" style="display:none;">My Account</a>
+    </nav>
+    <div class="nav-right">
+      <a href="order.html" class="cart-pill">🛒 <span class="count" id="cartCount">0</span></a>
+      <button class="nav-toggle" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</header>
+
+<main class="page-wrap">
+  <section class="section">
+    <div class="container">
+      <div class="reserve-layout">
+        <div>
+          <div class="section-head">
+            <h2>Make a Reservation</h2>
+            <p>Book your table with us — we'll have it ready when you arrive.</p>
+          </div>
+          <img src="WhatsApp Image 2026-09-21 at 10.50.33.jpeg" alt="Restaurant table setting" style="border-radius:var(--radius); box-shadow:var(--shadow-lg);">
+        </div>
+
+        <div class="card">
+          <h3 style="color:var(--purple-dark); margin-bottom:4px;">Book Your Table</h3>
+          <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:20px;">Fields marked with a date/time are required.</p>
+
+          <div class="form-alert" id="resAlert"></div>
+
+          <form id="reservationForm" novalidate>
+            <div class="field" id="f-name">
+              <label for="resName">Full Name</label>
+              <input type="text" id="resName" class="select-filter" style="width:100%;" placeholder="Your name">
+              <div class="field-error">Please enter your name.</div>
+            </div>
+
+            <div class="pickup-fields" style="margin-bottom:16px;">
+              <div class="field" id="f-date" style="margin-bottom:0;">
+                <label for="resDate">Date</label>
+                <input type="date" id="resDate" class="select-filter" style="width:100%;">
+                <div class="field-error">Please choose a date.</div>
+              </div>
+              <div class="field" id="f-time" style="margin-bottom:0;">
+                <label for="resTime">Time</label>
+                <input type="time" id="resTime" class="select-filter" style="width:100%;">
+                <div class="field-error">Please choose a time.</div>
+              </div>
+            </div>
+
+            <div class="field" id="f-guests">
+              <label for="resGuests">Number of Guests</label>
+              <input type="number" id="resGuests" min="1" max="20" value="2" class="select-filter" style="width:100%;">
+              <div class="field-error">Please enter at least 1 guest.</div>
+            </div>
+
+            <div class="field">
+              <label for="resNotes">Special Requests (Optional)</label>
+              <textarea id="resNotes" rows="3" class="select-filter" style="width:100%; resize:vertical;" placeholder="Any special requests?"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-secondary btn-block">Reserve Table</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  
+</footer>
+
+<script src="script.js"></script>
+<script>
+/* -----------------------------------------------------------
+   RESERVATION PAGE
+   protectCustomerPage() checks someone is logged in as a
+   customer. Just like on order.html, everything else on this
+   page is wrapped inside "if (loggedInCustomer !== null) { ... }"
+   so that none of the form logic runs (and the Reserve Table
+   button never becomes clickable) unless someone is actually
+   logged in — starting a redirect does not, by itself, stop the
+   rest of this script from running.
+----------------------------------------------------------- */
+var loggedInCustomer = protectCustomerPage();
+
+if (loggedInCustomer !== null) {
+
+  var today = new Date().toISOString().split("T")[0];
+  document.getElementById("resDate").value = today;
+  document.getElementById("resDate").min = today;
+
+  document.getElementById("resName").value = loggedInCustomer.name;
+
+  var form = document.getElementById("reservationForm");
+  var alertBox = document.getElementById("resAlert");
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    var name = document.getElementById("resName").value.trim();
+    var date = document.getElementById("resDate").value;
+    var time = document.getElementById("resTime").value;
+    var guests = document.getElementById("resGuests").value;
+    var notes = document.getElementById("resNotes").value.trim();
+
+    // Clear old error styling first
+    document.getElementById("f-name").classList.remove("invalid");
+    document.getElementById("f-date").classList.remove("invalid");
+    document.getElementById("f-time").classList.remove("invalid");
+    document.getElementById("f-guests").classList.remove("invalid");
+
+    var formIsValid = true;
+
+    if (name.length < 2) {
+      document.getElementById("f-name").classList.add("invalid");
+      formIsValid = false;
+    }
+    if (date === "") {
+      document.getElementById("f-date").classList.add("invalid");
+      formIsValid = false;
+    }
+    if (time === "") {
+      document.getElementById("f-time").classList.add("invalid");
+      formIsValid = false;
+    }
+    if (guests === "" || Number(guests) < 1) {
+      document.getElementById("f-guests").classList.add("invalid");
+      formIsValid = false;
+    }
+
+    if (formIsValid === false) {
+      return;
+    }
+
+    var result = placeReservation(name, date, time, guests, notes);
+localStorage.setItem("lastReservation", JSON.stringify(result.reservation));
+
+fetch("/api/save-reservation", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    customer_name: name,
+    customer_email: loggedInCustomer.email,
+    reservation_date: date,
+    reservation_time: time,
+    guests: Number(guests),
+    notes: notes
+  }),
+  keepalive: true
+})
+.catch(function(error) {
+  console.log("SQL save failed:", error);
+});
+
+window.location.href = "confirmation.html?type=reservation";
+  });
+
+} 
+</script>
+</body>
+</html>

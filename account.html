@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Account | Rendezvous Restaurant</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <span class="brand-mark">R</span>
+      <span class="brand-text"><span class="name">Rendezvous</span><br><span class="tag">RESTAURANT</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="menu.html">Menu</a>
+      <a href="order.html">Order</a>
+      <a href="reservation.html">Reserve</a>
+      <a href="account.html">My Account</a>
+    </nav>
+    <div class="nav-right">
+      <a href="order.html" class="cart-pill">🛒 <span class="count" id="cartCount">0</span></a>
+      <button class="nav-toggle" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</header>
+
+<main class="page-wrap">
+  <section class="section">
+    <div class="container" style="max-width:640px;">
+      <div class="section-head">
+        <h2>My Account</h2>
+        <p>Your details, and quick links to your orders and reservations.</p>
+      </div>
+
+      <div class="card" style="padding:28px; margin-bottom:20px;">
+        <div class="confirm-box" id="accountDetails" style="margin-bottom:0;">
+          
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+        <a href="my-orders.html" class="card btn-outline" style="padding:20px; text-align:center; display:block;">
+          🧾 View My Orders
+        </a>
+        <a href="my-reservation.html" class="card btn-outline" style="padding:20px; text-align:center; display:block;">
+          📅 View My Reservations
+        </a>
+      </div>
+
+      <button class="btn btn-danger btn-block" data-logout>Log Out</button>
+
+      <p class="form-note">Work here at Rendezvous? <a href="staff-login.html">Staff Login</a></p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  
+</footer>
+
+<script src="script.js"></script>
+<script>
+
+
+var customer = protectCustomerPage();
+
+if (customer !== null) {
+  var html = "";
+  html += '<div><span class="label">Name</span><span class="value">' + customer.name + "</span></div>";
+  html += '<div><span class="label">Email</span><span class="value">' + customer.email + "</span></div>";
+  document.getElementById("accountDetails").innerHTML = html;
+}
+</script>
+</body>
+</html>

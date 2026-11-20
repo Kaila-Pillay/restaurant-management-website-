@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Takeaway Order | Rendezvous Restaurant</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <span class="brand-mark">R</span>
+      <span class="brand-text"><span class="name">Rendezvous</span><br><span class="tag">RESTAURANT</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="menu.html">Menu</a>
+      <a href="order.html">Order</a>
+      <a href="reservation.html">Reserve</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="login.html" id="navLoginLink">Login</a>
+      <a href="account.html" id="navAccountLink" style="display:none;">My Account</a>
+    </nav>
+    <div class="nav-right">
+      <a href="order.html" class="cart-pill">🛒 <span class="count" id="cartCount">0</span></a>
+      <button class="nav-toggle" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</header>
+
+<main class="page-wrap">
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <h2>Takeaway Order</h2>
+        <p>Review your items, choose a pickup time, and place your order.</p>
+      </div>
+
+      <div class="order-layout">
+        <!-- LEFT: cart items + pickup time -->
+        <div>
+          <div class="order-panel card" style="margin-bottom:20px;">
+            <h3><span class="step-num">1</span> Select Items</h3>
+            <div id="cartTableWrap"><!-- filled by JS --></div>
+          </div>
+
+          <div class="order-panel card">
+            <h3><span class="step-num">2</span> Pickup Details</h3>
+            <div class="pickup-fields">
+              <div class="field">
+                <label for="pickupDate">Pickup Date</label>
+                <input type="date" id="pickupDate" class="select-filter" style="width:100%;">
+              </div>
+              <div class="field">
+                <label for="pickupTime">Pickup Time (min. 30 mins from now)</label>
+                <input type="time" id="pickupTime" class="select-filter" style="width:100%;">
+              </div>
+            </div>
+            <div class="field">
+              <label for="customerName">Name for Order</label>
+              <input type="text" id="customerName" class="select-filter" style="width:100%;" placeholder="Your name">
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: order summary -->
+        <div class="order-panel card">
+          <h3>Order Summary</h3>
+          <div id="summaryRows"><!-- filled by JS --></div>
+          <div class="summary-row total">
+            <span>Total</span>
+            <span id="summaryTotal">R0</span>
+          </div>
+          <p class="form-alert" id="orderAlert"></p>
+          <button class="btn btn-secondary btn-block" id="placeOrderBtn" style="margin-top:10px;">Place Order</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  
+</footer>
+
+<script src="script.js"></script>
+<script>
+
+var loggedInCustomer = protectCustomerPage();
+
+if (loggedInCustomer !== null) {
+
+  var cartArea = document.getElementById("cartTableWrap");
+  var summaryArea = document.getElementById("summaryRows");
+  var totalArea = document.getElementById("summaryTotal");
+  var orderAlert = document.getElementById("orderAlert");
+  var placeOrderButton = document.getElementById("placeOrderBtn");
+
+  // Fill in sensible defaults: today's date, and current time + 30 minutes
+  var today = new Date().toISOString().split("T")[0];
+  document.getElementById("pickupDate").value = today;
+  document.getElementById("pickupDate").min = today;
+
+  var earliestPickup = new Date(Date.now() + 30 * 60000); // 30 minutes from now
+  var hours = String(earliestPickup.getHours()).padStart(2, "0");
+  var minutes = String(earliestPickup.getMinutes()).padStart(2, "0");
+  document.getElementById("pickupTime").value = hours + ":" + minutes;
+
+  // Pre-fill their name automatically — we already have their details
+  // in the loggedInCustomer variable above.
+  document.getElementById("customerName").value = loggedInCustomer.name;
+
+  // Draws the cart table, the order summary, and the total price
+  function drawOrderPage() {
+    var cart = getCart();
+
+    // ---- Draw the cart table (left side) ----
+    if (cart.length === 0) {
+      cartArea.innerHTML = '<div class="empty-cart">Your cart is empty. <a href="menu.html">Browse the menu</a> to add items.</div>';
+    } else {
+      var tableHtml = '<table class="cart-table"><thead><tr><th>Item</th><th>Price</th><th>Qty</th><th>Total</th><th></th></tr></thead><tbody>';
+
+      for (var i = 0; i < cart.length; i++) {
+        var line = cart[i];
+        var lineTotal = line.price * line.quantity;
+
+        tableHtml += "<tr>";
+        tableHtml += "<td>" + line.name + "</td>";
+        tableHtml += "<td>R" + line.price + "</td>";
+        tableHtml += '<td><div class="qty-control">';
+        tableHtml += '<button class="decrease-btn" data-id="' + line.id + '">-</button>';
+        tableHtml += "<span>" + line.quantity + "</span>";
+        tableHtml += '<button class="increase-btn" data-id="' + line.id + '">+</button>';
+        tableHtml += "</div></td>";
+        tableHtml += "<td>R" + lineTotal + "</td>";
+        tableHtml += '<td><button class="remove-btn" data-id="' + line.id + '" style="background:none;color:var(--red);">Remove</button></td>';
+        tableHtml += "</tr>";
+      }
+
+      tableHtml += "</tbody></table>";
+      cartArea.innerHTML = tableHtml;
+    }
+
+    // ---- Draw the order summary (right side) ----
+    var summaryHtml = "";
+    for (var j = 0; j < cart.length; j++) {
+      var summaryLine = cart[j];
+      summaryHtml += '<div class="summary-row"><span>' + summaryLine.name + " x " + summaryLine.quantity + "</span><span>R" + (summaryLine.price * summaryLine.quantity) + "</span></div>";
+    }
+    summaryArea.innerHTML = summaryHtml;
+
+    totalArea.textContent = "R" + getCartTotal();
+    placeOrderButton.disabled = cart.length === 0;
+
+    // ---- Attach click events to the +, -, and Remove buttons ----
+    var decreaseButtons = document.querySelectorAll(".decrease-btn");
+    for (var a = 0; a < decreaseButtons.length; a++) {
+      decreaseButtons[a].addEventListener("click", function () {
+        changeCartQuantity(Number(this.getAttribute("data-id")), -1);
+        drawOrderPage();
+      });
+    }
+
+    var increaseButtons = document.querySelectorAll(".increase-btn");
+    for (var b = 0; b < increaseButtons.length; b++) {
+      increaseButtons[b].addEventListener("click", function () {
+        changeCartQuantity(Number(this.getAttribute("data-id")), 1);
+        drawOrderPage();
+      });
+    }
+
+    var removeButtons = document.querySelectorAll(".remove-btn");
+    for (var c = 0; c < removeButtons.length; c++) {
+      removeButtons[c].addEventListener("click", function () {
+        removeFromCart(Number(this.getAttribute("data-id")));
+        drawOrderPage();
+      });
+    }
+  }
+
+  // When "Place Order" is clicked: check the details, then save the order
+  placeOrderButton.addEventListener("click", function () {
+    var customerName = document.getElementById("customerName").value.trim();
+    var pickupDate = document.getElementById("pickupDate").value;
+    var pickupTime = document.getElementById("pickupTime").value;
+
+    if (customerName === "") {
+      orderAlert.textContent = "Please enter a name for the order.";
+      orderAlert.className = "form-alert show error";
+      return;
+    }
+    if (pickupDate === "" || pickupTime === "") {
+      orderAlert.textContent = "Please choose a pickup date and time.";
+      orderAlert.className = "form-alert show error";
+      return;
+    }
+
+   fetch("/api/save-order", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    customer_email: loggedInCustomer.email,
+    pickup_date: pickupDate,
+    pickup_time: pickupTime,
+    items: getCart(),
+    total_amount: getCartTotal()
+  })
+})
+.then(function(response) {
+  return response.json();
+})
+.then(function(data) {
+
+  if (data.success === false) {
+    orderAlert.textContent = data.message || data.error;
+    orderAlert.className = "form-alert show error";
+    return;
+  }
+
+  // Save the order to the existing website system too
+  var result = placeOrder(customerName, pickupDate, pickupTime);
+
+  if (result.success === false) {
+    orderAlert.textContent = result.message;
+    orderAlert.className = "form-alert show error";
+    return;
+  }
+
+  localStorage.setItem("lastOrder", JSON.stringify(result.order));
+  window.location.href = "confirmation.html?type=order";
+})
+.catch(function(error) {
+  console.log("SQL order save failed:", error);
+  orderAlert.textContent = "Could not save the order.";
+  orderAlert.className = "form-alert show error";
+});
+  });
+
+  // Draw the page for the first time when it loads
+  drawOrderPage();
+
+} 
+</script>
+</body>
+</html>

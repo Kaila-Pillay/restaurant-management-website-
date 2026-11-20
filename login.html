@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login | Rendezvous Restaurant</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <span class="brand-mark">R</span>
+      <span class="brand-text"><span class="name">Rendezvous</span><br><span class="tag">RESTAURANT</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="menu.html">Menu</a>
+      <a href="order.html">Order</a>
+      <a href="reservation.html">Reserve</a>
+      <a href="register.html">Register</a>
+    </nav>
+    <div class="nav-right">
+      <a href="order.html" class="cart-pill">🛒 <span class="count" id="cartCount">0</span></a>
+      <button class="nav-toggle" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</header>
+
+<main class="auth-wrap">
+  <div class="auth-card card">
+    <div class="auth-head">
+      <h2>Welcome Back!</h2>
+      <p>Login to your account</p>
+    </div>
+
+    <div class="form-alert" id="formAlert"></div>
+
+    <form id="loginForm" novalidate>
+      <div class="field" id="f-email">
+        <label for="email">Email Address</label>
+        <div class="input-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
+          <input type="email" id="email" placeholder="Email Address">
+        </div>
+        <div class="field-error">Please enter your email address.</div>
+      </div>
+
+      <div class="field" id="f-password">
+        <label for="password">Password</label>
+        <div class="input-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="password" id="password" placeholder="Password">
+          <button type="button" class="toggle-pw" data-toggle="password">Show</button>
+        </div>
+        <div class="field-error">Please enter your password.</div>
+      </div>
+
+      
+      <button type="submit" class="btn btn-secondary btn-block">Login</button>
+    </form>
+
+    <p class="form-note">Don't have an account? <a href="register.html">Register</a></p>
+  </div>
+</main>
+
+<script src="script.js"></script>
+<script>
+
+
+var form = document.getElementById("loginForm");
+var alertBox = document.getElementById("formAlert");
+
+document.querySelector('[data-toggle="password"]').addEventListener("click", function (event) {
+  var passwordInput = document.getElementById("password");
+  if (passwordInput.type === "password") {
+    passwordInput.type = "text";
+    event.target.textContent = "Hide";
+  } else {
+    passwordInput.type = "password";
+    event.target.textContent = "Show";
+  }
+});
+
+form.addEventListener("submit", function (event) {
+  event.preventDefault();
+
+  var email = document.getElementById("email").value.trim();
+  var password = document.getElementById("password").value;
+
+  document.getElementById("f-email").classList.remove("invalid");
+  document.getElementById("f-password").classList.remove("invalid");
+
+  var formIsValid = true;
+  if (isValidEmail(email) === false) {
+    document.getElementById("f-email").classList.add("invalid");
+    formIsValid = false;
+  }
+  if (password.length === 0) {
+    document.getElementById("f-password").classList.add("invalid");
+    formIsValid = false;
+  }
+  if (formIsValid === false) {
+    return;
+  }
+
+  fetch("/api/login", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    email: email,
+    password: password
+  })
+})
+.then(function(response) {
+  return response.json();
+})
+.then(function(data) {
+
+  if (data.success === false) {
+    alertBox.textContent = data.message;
+    alertBox.className = "form-alert show error";
+    return;
+  }
+
+  // Remember the customer for this browser session
+  sessionStorage.setItem("loggedInCustomer", JSON.stringify({
+    name: data.user.first_name + " " + data.user.last_name,
+    email: email
+  }));
+
+  alertBox.textContent = "Login successful! Redirecting...";
+  alertBox.className = "form-alert show success";
+
+  setTimeout(function () {
+    window.location.href = "index.html";
+  }, 700);
+})
+.catch(function(error) {
+  console.log("SQL login failed:", error);
+  alertBox.textContent = "Could not connect to the server.";
+  alertBox.className = "form-alert show error";
+});
+});
+</script>
+</body>
+</html>

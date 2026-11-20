@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account | Rendezvous Restaurant</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <span class="brand-mark">R</span>
+      <span class="brand-text"><span class="name">Rendezvous</span><br><span class="tag">RESTAURANT</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="menu.html">Menu</a>
+      <a href="order.html">Order</a>
+      <a href="reservation.html">Reserve</a>
+      <a href="login.html" id="navLoginLink">Login</a>
+      <a href="account.html" id="navAccountLink" style="display:none;">My Account</a>
+    </nav>
+    <div class="nav-right">
+      <a href="order.html" class="cart-pill">🛒 <span class="count" id="cartCount">0</span></a>
+      <button class="nav-toggle" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</header>
+
+<main class="auth-wrap">
+  <div class="auth-card card">
+    <div class="auth-head">
+      <h2>Create Account</h2>
+      <p>Join Rendezvous Restaurant</p>
+    </div>
+
+    <div class="form-alert" id="formAlert"></div>
+
+    <form id="registerForm" novalidate>
+      <div class="field" id="f-name">
+        <label for="fullName">Full Name</label>
+        <div class="input-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <input type="text" id="fullName" placeholder="Full Name">
+        </div>
+        <div class="field-error">Please enter your full name.</div>
+      </div>
+
+      <div class="field" id="f-email">
+        <label for="email">Email Address</label>
+        <div class="input-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
+          <input type="email" id="email" placeholder="Email Address">
+        </div>
+        <div class="field-error">Please enter a valid email address.</div>
+      </div>
+
+      <div class="field" id="f-phone">
+        <label for="phone">Phone Number</label>
+        <div class="input-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <input type="tel" id="phone" placeholder="Phone Number">
+        </div>
+        <div class="field-error">Please enter a valid phone number.</div>
+      </div>
+
+      <div class="field" id="f-password">
+        <label for="password">Password</label>
+        <div class="input-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="password" id="password" placeholder="Password">
+          <button type="button" class="toggle-pw" data-toggle="password">Show</button>
+        </div>
+        <div class="field-error">Password must be at least 6 characters.</div>
+      </div>
+
+      <div class="field" id="f-confirm">
+        <label for="confirmPassword">Confirm Password</label>
+        <div class="input-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="password" id="confirmPassword" placeholder="Confirm Password">
+        </div>
+        <div class="field-error">Passwords do not match.</div>
+      </div>
+
+      <button type="submit" class="btn btn-secondary btn-block">Register</button>
+    </form>
+
+    <p class="form-note">Already have an account? <a href="login.html">Login</a></p>
+  </div>
+</main>
+
+<script src="script.js"></script>
+
+<script>
+var form = document.getElementById("registerForm");
+var alertBox = document.getElementById("formAlert");
+
+// Show/hide password
+document.querySelector('[data-toggle="password"]').addEventListener("click", function (event) {
+  var passwordInput = document.getElementById("password");
+
+  if (passwordInput.type === "password") {
+    passwordInput.type = "text";
+    event.target.textContent = "Hide";
+  } else {
+    passwordInput.type = "password";
+    event.target.textContent = "Show";
+  }
+});
+
+form.addEventListener("submit", function (event) {
+  event.preventDefault();
+
+  var fullName = document.getElementById("fullName").value.trim();
+  var email = document.getElementById("email").value.trim();
+  var phone = document.getElementById("phone").value.trim();
+  var password = document.getElementById("password").value;
+  var confirmPassword = document.getElementById("confirmPassword").value;
+
+  clearFieldError(document.getElementById("f-name"));
+  clearFieldError(document.getElementById("f-email"));
+  clearFieldError(document.getElementById("f-phone"));
+  clearFieldError(document.getElementById("f-password"));
+  clearFieldError(document.getElementById("f-confirm"));
+
+  var formIsValid = true;
+
+  if (fullName.length < 2) {
+    showFieldError(document.getElementById("f-name"));
+    formIsValid = false;
+  }
+
+  if (isValidEmail(email) === false) {
+    showFieldError(document.getElementById("f-email"));
+    formIsValid = false;
+  }
+
+  if (phone.length < 7) {
+    showFieldError(document.getElementById("f-phone"));
+    formIsValid = false;
+  }
+
+  if (password.length < 6) {
+    showFieldError(document.getElementById("f-password"));
+    formIsValid = false;
+  }
+
+  if (confirmPassword !== password) {
+    showFieldError(document.getElementById("f-confirm"));
+    formIsValid = false;
+  }
+
+  if (formIsValid === false) {
+    return;
+  }
+
+  // Save to the website
+  var result = registerNewCustomer(fullName, email, phone, password);
+
+  if (result.success === false) {
+    alertBox.textContent = result.message;
+    alertBox.className = "form-alert show error";
+    return;
+  }
+
+  // Save the same customer to SQL Server
+  var nameParts = fullName.split(" ");
+  var firstName = nameParts[0];
+  var lastName = nameParts.slice(1).join(" ");
+
+  fetch("/api/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      first_name: firstName,
+      last_name: lastName,
+      email: email,
+      password: password,
+      phone: phone
+    })
+  })
+  .then(function(response) {
+    return response.json();
+  })
+  .then(function(data) {
+    if (data.success === false) {
+      console.log("SQL registration failed:", data.error);
+    }
+  })
+  .catch(function(error) {
+    console.log("SQL registration failed:", error);
+  });
+
+  alertBox.textContent = "Account created! Redirecting to login...";
+  alertBox.className = "form-alert show success";
+
+  setTimeout(function () {
+    window.location.href = "login.html";
+  }, 900);
+});
+
+function showFieldError(fieldBox) {
+  fieldBox.classList.add("invalid");
+}
+
+function clearFieldError(fieldBox) {
+  fieldBox.classList.remove("invalid");
+}
+</script>
+
+</body>
+</html>

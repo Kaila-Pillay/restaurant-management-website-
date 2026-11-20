@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirmation | Rendezvous Restaurant</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <span class="brand-mark">R</span>
+      <span class="brand-text"><span class="name">Rendezvous</span><br><span class="tag">RESTAURANT</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="menu.html">Menu</a>
+      <a href="order.html">Order</a>
+      <a href="reservation.html">Reserve</a>
+    </nav>
+    <div class="nav-right">
+      <a href="order.html" class="cart-pill">🛒 <span class="count" id="cartCount">0</span></a>
+    </div>
+  </div>
+</header>
+
+<main class="page-wrap">
+  <div class="confirm-wrap card" id="confirmCard">
+    
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">&copy; 2026 Rendezvous Restaurant, Durban.</div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+
+
+
+var urlParams = new URLSearchParams(window.location.search);
+var type = urlParams.get("type");
+var card = document.getElementById("confirmCard");
+
+if (type === "reservation") {
+
+  var reservationText = localStorage.getItem("lastReservation");
+
+  if (reservationText === null) {
+    card.innerHTML = '<p>No recent reservation found. <a href="reservation.html">Make one now</a>.</p>';
+  } else {
+    var reservation = JSON.parse(reservationText);
+    var html = "";
+    html += '<div class="confirm-icon">&#10003;</div>';
+    html += "<h2>Reservation Request Placed!</h2>";
+    html += "<p>Your reservation is pending staff confirmation..</p>";
+    html += '<div class="confirm-box">';
+    html += '<div><span class="label">Reservation ID</span><span class="value">#' + reservation.id + "</span></div>";
+    html += '<div><span class="label">Name</span><span class="value">' + reservation.customerName + "</span></div>";
+    html += '<div><span class="label">Date &amp; Time</span><span class="value">' + reservation.date + ", " + reservation.time + "</span></div>";
+    html += '<div><span class="label">Guests</span><span class="value">' + reservation.guests + "</span></div>";
+    html += "</div>";
+    html += '<a href="index.html" class="btn btn-primary btn-block">Back to Home</a>';
+    card.innerHTML = html;
+  }
+
+} else {
+
+  var orderText = localStorage.getItem("lastOrder");
+
+  if (orderText === null) {
+    card.innerHTML = '<p>No recent order found. <a href="menu.html">Browse the menu</a>.</p>';
+  } else {
+    var order = JSON.parse(orderText);
+    var html2 = "";
+    html2 += '<div class="confirm-icon">&#10003;</div>';
+    html2 += "<h2>Order Request Placed!</h2>";
+    html2 += "<p>Your order is pending staff confirmation..</p>";
+    html2 += '<div class="confirm-box">';
+    html2 += '<div><span class="label">Order ID</span><span class="value">#' + order.id + "</span></div>";
+    html2 += '<div><span class="label">Items</span><span class="value">' + order.itemCount + "</span></div>";
+    html2 += '<div><span class="label">Total</span><span class="value">R' + order.total + "</span></div>";
+    html2 += '<div><span class="label">Pickup Time</span><span class="value">' + order.pickupDate + ", " + order.pickupTime + "</span></div>";
+    html2 += "</div>";
+    html2 += '<a href="index.html" class="btn btn-primary btn-block">Back to Home</a>';
+    card.innerHTML = html2;
+  }
+}
+</script>
+</body>
+</html>

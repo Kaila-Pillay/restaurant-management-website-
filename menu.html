@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menu | Rendezvous Restaurant</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <span class="brand-mark">R</span>
+      <span class="brand-text"><span class="name">Rendezvous</span><br><span class="tag">RESTAURANT</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="menu.html">Menu</a>
+      <a href="order.html">Order</a>
+      <a href="reservation.html">Reserve</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="login.html" id="navLoginLink">Login</a>
+      <a href="account.html" id="navAccountLink" style="display:none;">My Account</a>
+    </nav>
+    <div class="nav-right">
+      <a href="order.html" class="cart-pill">🛒 <span class="count" id="cartCount">0</span></a>
+      <button class="nav-toggle" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</header>
+
+<main class="page-wrap">
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <h2>Our Menu</h2>
+        <p>Browse by category and add items straight to your takeaway order.</p>
+      </div>
+
+      <div class="filter-bar" id="filterBar">
+        <button class="filter-chip active" data-category="All">All</button>
+        <button class="filter-chip" data-category="Sandwiches">Sandwiches</button>
+        <button class="filter-chip" data-category="Light Meals">Light Meals</button>
+        <button class="filter-chip" data-category="Main Meals">Main Meals</button>
+        <button class="filter-chip" data-category="Dessert">Dessert</button>
+        <button class="filter-chip" data-category="Drinks">Drinks</button>
+      </div>
+
+      <div class="menu-grid" id="menuGrid"><!-- filled by JS --></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-top">
+      <a href="index.html" class="brand">
+        <span class="brand-mark">R</span>
+        <span class="brand-text"><span class="name">Rendezvous</span></span>
+      </a>
+      <nav class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="reservation.html">Reserve</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">&copy; 2026 Rendezvous Restaurant, Durban.</div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+<script src="script.js"></script>
+
+<script>
+var menuGrid = document.getElementById("menuGrid");
+var filterChips = document.querySelectorAll(".filter-chip");
+
+var sqlMenu = [];
+
+// Get the menu from SQL Server
+fetch("/api/menu")
+  .then(function(response) {
+    return response.json();
+  })
+  .then(function(data) {
+
+    for (var i = 0; i < data.length; i++) {
+      sqlMenu.push({
+        id: data[i].item_id,
+        name: data[i].item_name,
+        desc: data[i].description,
+        price: data[i].price,
+        category: data[i].category_name,
+        available: data[i].availability !== 0
+      });
+    }
+
+    showMenuItems("All");
+  })
+  .catch(function(error) {
+    console.log("Could not load menu from SQL:", error);
+  });
+
+
+function showMenuItems(category) {
+  var menu = sqlMenu;
+  var html = "";
+
+  for (var i = 1; i < menu.length; i++) {
+    var item = menu[i];
+
+    if (category !== "All" && item.category !== category) {
+      continue;
+    }
+
+    var badgeClass = item.available ? "available" : "unavailable";
+    var badgeText = item.available ? "Available" : "Sold Out";
+    var buttonText = item.available ? "Add to Order" : "Unavailable";
+    var disabledAttribute = item.available ? "" : "disabled";
+
+    html += '<div class="menu-item card">';
+    html += '  <div class="menu-info">';
+    html += '    <h4>' + item.name + '</h4>';
+    html += '    <p>' + item.desc + '</p>';
+    html += '    <div class="menu-meta">';
+    html += '      <span class="price">R' + item.price + '</span>';
+    html += '      <span class="badge ' + badgeClass + '">' + badgeText + '</span>';
+    html += '    </div>';
+    html += '    <button class="btn btn-primary btn-sm add-btn" data-id="' + item.id + '" ' + disabledAttribute + '>' + buttonText + '</button>';
+    html += '  </div>';
+    html += '</div>';
+  }
+
+  menuGrid.innerHTML = html;
+
+  var addButtons = document.querySelectorAll(".add-btn");
+
+  for (var j = 0; j < addButtons.length; j++) {
+    addButtons[j].addEventListener("click", function () {
+      var itemId = Number(this.getAttribute("data-id"));
+      addToCart(itemId,sqlMenu);
+    });
+  }
+}
+
+
+for (var k = 0; k < filterChips.length; k++) {
+  filterChips[k].addEventListener("click", function () {
+
+    for (var m = 0; m < filterChips.length; m++) {
+      filterChips[m].classList.remove("active");
+    }
+
+    this.classList.add("active");
+
+    var chosenCategory = this.getAttribute("data-category");
+
+    showMenuItems(chosenCategory);
+  });
+}
+</script>
+</body>
+</html>

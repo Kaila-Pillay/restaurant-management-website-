@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orders | Rendezvous Restaurant Staff</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="dash-shell">
+  <aside class="sidebar">
+    <a href="index.html" class="brand">
+      <span class="brand-mark">R</span>
+      <span class="brand-text"><span class="name">Rendezvous</span></span>
+    </a>
+    <nav class="side-links">
+      <a href="admin-dashboard.html">📊 Dashboard</a>
+      <a href="staff-orders.html" class="active">🧾 Orders</a>
+      <a href="staff-reservation.html">📅 Reservations</a>
+      <a href="#" data-logout>🚪 Logout</a>
+    </nav>
+    <div class="side-user">
+      <strong id="staffName">—</strong>
+      <span id="staffRole">—</span>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-head">
+      <h1>Orders</h1>
+      <select class="select-filter" id="statusFilter">
+        <option value="All">All Status</option>
+        <option value="Pending">Pending</option>
+          <option value="Confirmed">Confirmed</option>
+        <option value="Ready">Ready</option>
+        <option value="Completed">Completed</option>
+      </select>
+    </div>
+
+    <div class="panel card">
+      <table class="data-table">
+        <thead><tr><th>Order ID</th><th>Customer</th><th>Items Ordered</th><th>Pickup Time</th><th>Status</th><th>Update</th></tr></thead>
+        <tbody id="ordersBody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script src="script.js"></script>
+<script>
+
+
+var staff = protectStaffPage();
+
+if (staff !== null) {
+
+  document.getElementById("staffName").textContent = staff.name;
+  document.getElementById("staffRole").textContent = (staff.role === "admin") ? "Administrator" : "Staff";
+
+  var tbody = document.getElementById("ordersBody");
+  var filter = document.getElementById("statusFilter");
+
+  async function drawOrdersTable() {
+    var chosenStatus = filter.value;
+    var html = "";
+
+    try {
+        var response = await fetch("/api/admin/orders");
+        var allOrders = await response.json();
+
+        for (var i = 0; i < allOrders.length; i++) {
+            var order = allOrders[i];
+
+            var orderStatus = order.order_status;
+            var customerName = order.first_name + " " + order.last_name;
+
+            if (chosenStatus !== "All" && orderStatus !== chosenStatus) {
+                continue;
+            }
+
+            html += "<tr>";
+            html += "<td>#" + order.order_id + "</td>";
+            html += "<td>" + customerName + "</td>";
+            html += "<td>" + order.item_name + " x " + order.quantity + "</td>";
+            html += "<td>" + order.pickup_date + ", " + order.pickup_time + "</td>";
+            html += '<td><span class="status-pill ' + orderStatus.toLowerCase() + '">' + orderStatus + "</span></td>";
+
+            html += '<td><select class="select-filter status-select" data-id="' + order.order_id + '">';
+            html += '<option' + (orderStatus === "Pending" ? " selected" : "") + '>Pending</option>';
+            html += '<option' + (orderStatus === "Ready" ? " selected" : "") + '>Ready</option>';
+            html += '<option' + (orderStatus === "Confirmed" ? " selected" : "") + '>Confirmed</option>';
+            html += '<option' + (orderStatus === "Completed" ? " selected" : "") + '>Completed</option>';
+            html += '<option' + (orderStatus === "Cancelled" ? " selected" : "") + '>Cancelled</option>';
+            html += "</select></td>";
+
+            html += "</tr>";
+        }
+
+        if (html === "") {
+            html = '<tr><td colspan="6" style="color:var(--text-muted)">No orders match this filter.</td></tr>';
+        }
+
+        tbody.innerHTML = html;
+
+        var dropdowns = document.querySelectorAll(".status-select");
+
+        for (var j = 0; j < dropdowns.length; j++) {
+            dropdowns[j].addEventListener("change", async function () {
+
+                var orderId = this.getAttribute("data-id");
+                var newStatus = this.value;
+
+                try {
+                    var response = await fetch("/api/admin/orders/" + orderId, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            status: newStatus
+                        })
+                    });
+
+                    var result = await response.json();
+
+                    if (result.success) {
+                        drawOrdersTable();
+                    } else {
+                        alert("Could not update order status.");
+                    }
+
+                } catch (error) {
+                    console.error("Error updating order status:", error);
+                    alert("Could not update order status.");
+                }
+            });
+        }
+
+    } catch (error) {
+        console.error("Could not load orders:", error);
+        tbody.innerHTML =
+            '<tr><td colspan="6">Could not load orders from SQL Server.</td></tr>';
+    }
+}
+
+  filter.addEventListener("change", drawOrdersTable);
+  drawOrdersTable();
+
+} // end of "if (staff !== null)"
+</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard | Rendezvous Restaurant</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="dash-shell">
+  <aside class="sidebar">
+    <a href="index.html" class="brand">
+      <span class="brand-mark">R</span>
+      <span class="brand-text"><span class="name">Rendezvous</span></span>
+    </a>
+    <nav class="side-links">
+      <a href="admin-dashboard.html" class="active">📊 Dashboard</a>
+      <a href="staff-orders.html">🧾 Orders</a>
+      <a href="staff-reservation.html">📅 Reservations</a>
+      <a href="#" data-logout>🚪 Logout</a>
+    </nav>
+    <div class="side-user">
+      <strong id="staffName">—</strong>
+      <span id="staffRole">—</span>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-head">
+      <h1>Dashboard Overview</h1>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card card"><div class="num" id="statTotalOrders">0</div><div class="lbl">Total Orders</div></div>
+      <div class="stat-card card"><div class="num" id="statTodayOrders">0</div><div class="lbl">Today's Orders</div></div>
+      <div class="stat-card card"><div class="num" id="statTotalRes">0</div><div class="lbl">Total Reservations</div></div>
+      <div class="stat-card card"><div class="num" id="statUpcomingRes">0</div><div class="lbl">Upcoming Reservations</div></div>
+    </div>
+
+    <div class="dash-cols">
+      <div class="panel card">
+        <div class="panel-head">
+          <h3>Recent Orders</h3>
+          <a href="staff-orders.html" style="font-size:0.82rem;color:var(--purple);font-weight:600;">View All</a>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>Order ID</th><th>Customer</th><th>Items Ordered</th><th>Pickup</th><th>Status</th></tr></thead>
+          <tbody id="recentOrdersBody"></tbody>
+        </table>
+      </div>
+
+      <div class="panel card">
+        <div class="panel-head">
+          <h3>Upcoming Reservations</h3>
+          <a href="staff-reservation.html" style="font-size:0.82rem;color:var(--purple);font-weight:600;">View All</a>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>Res ID</th><th>Customer</th><th>Date</th><th>Time</th><th>Guests</th></tr></thead>
+          <tbody id="recentResBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="script.js"></script>
+<script>
+
+var staff = protectStaffPage();
+
+if (staff !== null) {
+
+  document.getElementById("staffName").textContent = staff.name;
+  document.getElementById("staffRole").textContent = (staff.role === "admin") ? "Administrator" : "Staff";
+
+  var orders = getAllOrders();
+  var reservations = getAllReservations();
+  var today = new Date().toISOString().split("T")[0];
+
+  // ---- Count the statistics ----
+  var todaysOrderCount = 0;
+  for (var i = 0; i < orders.length; i++) {
+    if (orders[i].pickupDate === today) {
+      todaysOrderCount = todaysOrderCount + 1;
+    }
+  }
+
+  var upcomingReservationCount = 0;
+  for (var j = 0; j < reservations.length; j++) {
+    if (reservations[j].date >= today) {
+      upcomingReservationCount = upcomingReservationCount + 1;
+    }
+  }
+
+  document.getElementById("statTotalOrders").textContent = orders.length;
+  document.getElementById("statTodayOrders").textContent = todaysOrderCount;
+  document.getElementById("statTotalRes").textContent = reservations.length;
+  document.getElementById("statUpcomingRes").textContent = upcomingReservationCount;
+
+  // ---- Draw the 5 most recent orders ----
+  var ordersHtml = "";
+  for (var k = 0; k < orders.length && k < 5; k++) {
+    var o = orders[k];
+    ordersHtml += "<tr>";
+    ordersHtml += "<td>#" + o.id + "</td>";
+    ordersHtml += "<td>" + o.customerName + "</td>";
+    ordersHtml += "<td>" + buildItemsListHtml(o.items) + "</td>";
+    ordersHtml += "<td>" + o.pickupTime + "</td>";
+    ordersHtml += '<td><span class="status-pill ' + o.status.toLowerCase() + '">' + o.status + "</span></td>";
+    ordersHtml += "</tr>";
+  }
+  if (orders.length === 0) {
+    ordersHtml = '<tr><td colspan="5" style="color:var(--text-muted)">No orders yet.</td></tr>';
+  }
+  document.getElementById("recentOrdersBody").innerHTML = ordersHtml;
+
+  // ---- Draw the 5 most recent reservations ----
+  var reservationsHtml = "";
+  for (var m = 0; m < reservations.length && m < 5; m++) {
+    var r = reservations[m];
+    reservationsHtml += "<tr>";
+    reservationsHtml += "<td>#" + r.id + "</td>";
+    reservationsHtml += "<td>" + r.customerName + "</td>";
+    reservationsHtml += "<td>" + r.date + "</td>";
+    reservationsHtml += "<td>" + r.time + "</td>";
+    reservationsHtml += "<td>" + r.guests + "</td>";
+    reservationsHtml += "</tr>";
+  }
+  if (reservations.length === 0) {
+    reservationsHtml = '<tr><td colspan="5" style="color:var(--text-muted)">No reservations yet.</td></tr>';
+  }
+  document.getElementById("recentResBody").innerHTML = reservationsHtml;
+
+} 
+</script>
+</body>
+</html>

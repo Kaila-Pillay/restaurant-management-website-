@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Reservations | Rendezvous Restaurant</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <span class="brand-mark">R</span>
+      <span class="brand-text"><span class="name">Rendezvous</span><br><span class="tag">RESTAURANT</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="menu.html">Menu</a>
+      <a href="order.html">Order</a>
+      <a href="reservation.html">Reserve</a>
+      <a href="account.html">My Account</a>
+    </nav>
+    <div class="nav-right">
+      <a href="order.html" class="cart-pill">🛒 <span class="count" id="cartCount">0</span></a>
+      <button class="nav-toggle" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</header>
+
+<main class="page-wrap">
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <h2>My Reservations</h2>
+        <p>Every table booking you've made while logged in.</p>
+      </div>
+
+      <div class="panel card">
+        <table class="data-table">
+          <thead><tr><th>Res ID</th><th>Date</th><th>Time</th><th>Guests</th><th>Status</th></tr></thead>
+          <tbody id="myReservationsBody"><!-- filled by JS --></tbody>
+        </table>
+      </div>
+
+      <p style="margin-top:18px;"><a href="account.html" style="color:var(--purple); font-weight:600;">&larr; Back to My Account</a></p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  
+</footer>
+
+<script src="script.js"></script>
+<script>
+var customer = protectCustomerPage();
+
+if (customer !== null) {
+
+    async function loadMyReservations() {
+
+        try {
+
+            var response = await fetch(
+                "/api/customer/reservations/" +
+                encodeURIComponent(customer.email)
+            );
+
+            var reservations = await response.json();
+
+            var html = "";
+
+            for (var i = 0; i < reservations.length; i++) {
+
+                var reservation = reservations[i];
+
+                html += "<tr>";
+
+                html += "<td>#" +
+                    reservation.reservation_id +
+                    "</td>";
+
+                html += "<td>" +
+                    reservation.reservation_date +
+                    "</td>";
+
+                html += "<td>" +
+                    reservation.reservation_time +
+                    "</td>";
+
+                html += "<td>" +
+                    reservation.party_size +
+                    "</td>";
+
+                html += '<td><span class="status-pill ' +
+                    reservation.status.toLowerCase() +
+                    '">' +
+                    reservation.status +
+                    "</span></td>";
+
+                html += "</tr>";
+            }
+
+            if (reservations.length === 0) {
+
+                html =
+                    '<tr><td colspan="5" style="color:var(--text-muted)">' +
+                    'You haven\'t made any reservations yet. ' +
+                    '<a href="reservation.html">Book a table</a>.' +
+                    '</td></tr>';
+            }
+
+            document.getElementById("myReservationsBody").innerHTML = html;
+
+        } catch (error) {
+
+            console.error(
+                "Could not load customer reservations:",
+                error
+            );
+
+            document.getElementById("myReservationsBody").innerHTML =
+                '<tr><td colspan="5">Could not load your reservations.</td></tr>';
+        }
+    }
+
+    loadMyReservations();
+
+}
+</script>
+</body>
+</html>

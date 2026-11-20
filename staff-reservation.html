@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reservations | Rendezvous Restaurant Staff</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="dash-shell">
+  <aside class="sidebar">
+    <a href="index.html" class="brand">
+      <span class="brand-mark">R</span>
+      <span class="brand-text"><span class="name">Rendezvous</span></span>
+    </a>
+    <nav class="side-links">
+      <a href="admin-dashboard.html">📊 Dashboard</a>
+      <a href="staff-orders.html">🧾 Orders</a>
+      <a href="staff-reservation.html" class="active">📅 Reservations</a>
+      <a href="#" data-logout>🚪 Logout</a>
+    </nav>
+    <div class="side-user">
+      <strong id="staffName">—</strong>
+      <span id="staffRole">—</span>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-head">
+      <h1>Reservations</h1>
+      <select class="select-filter" id="statusFilter">
+        <option value="All">All</option>
+        <option value="Pending">Pending</option>
+        <option value="Confirmed">Confirmed</option>
+        <option value="Completed">Completed</option>
+        <option value="Cancelled">Cancelled</option>
+      </select>
+    </div>
+
+    <div class="panel card">
+      <table class="data-table">
+        <thead><tr><th>Res ID</th><th>Customer</th><th>Date</th><th>Time</th><th>Guests</th><th>Status</th><th>Update</th></tr></thead>
+        <tbody id="resBody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script src="script.js"></script>
+<script>
+
+
+var staff = protectStaffPage();
+
+if (staff !== null) {
+
+  document.getElementById("staffName").textContent = staff.name;
+  document.getElementById("staffRole").textContent = (staff.role === "admin") ? "Administrator" : "Staff";
+
+  var tbody = document.getElementById("resBody");
+  var filter = document.getElementById("statusFilter");
+async function drawReservationsTable() {
+    var chosenStatus = filter.value;
+    var html = "";
+
+    try {
+        var response = await fetch("/api/admin/reservations");
+        var allReservations = await response.json();
+
+        for (var i = 0; i < allReservations.length; i++) {
+
+            var reservation = allReservations[i];
+
+            var customerName = reservation.first_name + " " + reservation.last_name;
+            var reservationStatus = reservation.status;
+
+            if (chosenStatus !== "All" && reservationStatus !== chosenStatus) {
+                continue;
+            }
+
+            html += "<tr>";
+
+            html += "<td>#" + reservation.reservation_id + "</td>";
+
+            html += "<td>" + customerName + "</td>";
+
+            html += "<td>" + reservation.reservation_date + "</td>";
+
+            html += "<td>" + reservation.reservation_time + "</td>";
+
+            html += "<td>" + reservation.party_size + "</td>";
+
+            html += '<td><span class="status-pill ' +
+                reservationStatus.toLowerCase() +
+                '">' +
+                reservationStatus +
+                "</span></td>";
+
+            html += '<td><select class="select-filter status-select" data-id="' +
+                reservation.reservation_id +
+                '">';
+
+                  html += '<option' +
+                (reservationStatus === "Pending" ? " selected" : "") +
+                '>Pending</option>'; 
+
+            html += '<option' +
+                (reservationStatus === "Confirmed" ? " selected" : "") +
+                '>Confirmed</option>';
+
+            html += '<option' +
+                (reservationStatus === "Completed" ? " selected" : "") +
+                '>Completed</option>';
+
+            html += '<option' +
+                (reservationStatus === "Cancelled" ? " selected" : "") +
+                '>Cancelled</option>';
+
+            html += "</select></td>";
+
+            html += "</tr>";
+        }
+
+        if (html === "") {
+            html = '<tr><td colspan="7" style="color:var(--text-muted)">No reservations match this filter.</td></tr>';
+        }
+
+        tbody.innerHTML = html;
+
+        var dropdowns = document.querySelectorAll(".status-select");
+
+        for (var j = 0; j < dropdowns.length; j++) {
+
+            dropdowns[j].addEventListener("change", async function () {
+
+                var reservationId = this.getAttribute("data-id");
+                var newStatus = this.value;
+
+                try {
+
+                    var response = await fetch(
+                        "/api/admin/reservations/" + reservationId,
+                        {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                status: newStatus
+                            })
+                        }
+                    );
+
+                    var result = await response.json();
+
+                    if (result.success) {
+                        drawReservationsTable();
+                    } else {
+                        alert("Could not update reservation status.");
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        "Error updating reservation status:",
+                        error
+                    );
+
+                    alert("Could not update reservation status.");
+                }
+
+            });
+        }
+
+    } catch (error) {
+
+        console.error("Could not load reservations:", error);
+
+        tbody.innerHTML =
+            '<tr><td colspan="7">Could not load reservations from SQL Server.</td></tr>';
+    }
+}
+
+  filter.addEventListener("change", drawReservationsTable);
+  drawReservationsTable();
+
+} // end of "if (staff !== null)"
+</script>
+</body>
+</html>

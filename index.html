@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rendezvous Restaurant | Good Food. Great Moments.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <span class="brand-mark">R</span>
+      <span class="brand-text">
+        <span class="name">Rendezvous</span><br>
+        <span class="tag">RESTAURANT</span>
+      </span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="menu.html">Menu</a>
+      <a href="order.html">Order</a>
+      <a href="reservation.html">Reserve</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="login.html" id="navLoginLink">Login</a>
+      <a href="account.html" id="navAccountLink" style="display:none;">My Account</a>
+    </nav>
+    <div class="nav-right">
+      <a href="order.html" class="cart-pill">🛒 <span class="count" id="cartCount">0</span></a>
+      <button class="nav-toggle" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</header>
+
+<main class="page-wrap">
+
+  
+  <section class="hero">
+    <div class="container">
+      <div class="hero-copy">
+        <h1>Learn. <br> Taste.<br><em>Experience.</em></h1>
+        <p>Welcome to Rendezvous Restaurant. Enjoy delicious meals and great hospitality, whether you're dining in or looking for a quick meal on the go, we'll have your taste buds satisfied! </p>
+        <div class="hero-actions">
+          <a href="menu.html" class="btn btn-primary">View Menu</a>
+          <a href="reservation.html" class="btn btn-secondary">Make a Reservation</a>
+        </div>
+        <div class="feature-strip">
+          <div class="feature">
+            <div class="feature-icon">🍽️</div>
+            <h4>Delicious Food</h4>
+            <p>Freshly prepared every day.</p>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">🥡</div>
+            <h4>Takeaway Orders</h4>
+            <p>Order now and pick up at your convenience.</p>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">📅</div>
+            <h4>Reservations</h4>
+            <p>Book your table in advance.</p>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">💳</div>
+            <h4>Pay at Pickup</h4>
+            <p>Pay when you collect your order.</p>
+          </div>
+        </div>
+      </div>
+      <div class="hero-img">
+        <img src="image.png" alt="Rendezvous Restaurant dining room">
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <h2>From Our Menu</h2>
+      
+      </div>
+      <div class="menu-grid" id="home-menu-preview"><!-- filled by JS --></div>
+      <div style="text-align:center; margin-top:30px;">
+        <a href="menu.html" class="btn btn-outline">See Full Menu</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-top">
+      <a href="index.html" class="brand">
+        <span class="brand-mark">R</span>
+        <span class="brand-text"><span class="name">Rendezvous</span></span>
+      </a>
+      <nav class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="menu.html">Menu</a>
+        <a href="reservation.html">Reserve</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+        <a href="staff-login.html">Staff Login</a>
+      </nav>
+    
+</footer>
+
+<script src="script.js"></script>
+<script>
+  
+
+  var menu = getMenu();
+  var previewBox = document.getElementById("home-menu-preview");
+  var html = ""; // we build up one big string of HTML, then insert it once at the end
+
+  var shown = 0;
+  for (var i = 0; i < menu.length; i++) {
+    if (menu[i].available === true && shown < 3) {
+      var item = menu[i];
+      html += '<div class="menu-item card">';
+      html += '  <div class="menu-info">';
+      html += '    <h4>' + item.name + '</h4>';
+      html += '    <p>' + item.desc + '</p>';
+      html += '    <div class="menu-meta">';
+      html += '      <span class="price">R' + item.price + '</span>';
+      html += '      <span class="badge available">Available</span>';
+      html += '    </div>';
+      html += '  </div>';
+      html += '</div>';
+      shown = shown + 1;
+    }
+  }
+
+  previewBox.innerHTML = html;
+</script>
+</body>
+</html>
